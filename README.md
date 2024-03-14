@@ -1,10 +1,11 @@
 # UPC Item Lookup
 
-This Python script is used to fetch and store product details from the UPCItemDB API. It reads UPC codes from a text file or a default list, fetches product details for each UPC code, and stores the details in an Excel workbook.
+This Python script fetches and stores product details from the UPCItemDB API. It reads UPC codes from a text file or a default list, fetches product details for each UPC code, and stores the details in an Excel workbook.
 
 ## Features
 
-- Fetches product details for each UPC code from the UPCItemDB API.
+- Fetches product details for each UPC code from the UPCItemDB API. Here is the link to the API documentation: [UPCItemDB Development](https://www.upcitemdb.com/wp/docs/main/development/).
+- Uses the `user_key` variable from the `config.ini` file to authenticate with the API if you have one. Otherwise, it uses the trial endpoint with a rate limit of 100 requests per day for free. [UPCItemDB API Rate Limits](https://www.upcitemdb.com/wp/docs/main/development/api-rate-limits/)
 - Stores product details in an Excel workbook, with a separate sheet for each UPC code and a master sheet containing details of all products.
 - Updates existing product details if the UPC code is already present in the workbook.
 - Handles API rate limits by retrying after a delay.
@@ -19,13 +20,13 @@ This Python script is used to fetch and store product details from the UPCItemDB
 
 ## Calling lookup_request and main functions
 
-You can call the main function from another script by importing the `lookup_request` or `main` functions and passing the desired parameters. 
+You can call the main function from another script by importing the `lookup_request` or `main` functions and passing the desired parameters.
 
-The `lookup_request` function only takes one parameter, which is the UPC code to be looked up. It returns a json response containing the product details from the UPCItemDB API.
+The `lookup_request` function takes one parameter, which is the UPC code to be looked up. It returns a json response containing the product details from the UPCItemDB API.
 
-The `main` function takes four parameters: `outputfilename`, `masterfilename`, and `input_filename`, and `default_upcs`. ITs designed to accept different input and output file names and paths.
+The `main` function takes four parameters: `outputfilename`, `masterfilename`, `input_filename`, and `default_upcs`. It's designed to accept different input and output file names and paths.
 
-Examples of calling either can be seen in the `call_example.py` file.
+Examples of calling either can be seen in the `call_example.py` file. Run it to test your own UPC codes but comment the ones you want to use.
 
 ## Dependencies
 
@@ -33,13 +34,32 @@ Examples of calling either can be seen in the `call_example.py` file.
 - `openpyxl`: Used to read from and write to Excel workbooks.
 - `os`: Used to check if files exist and to join paths.
 - `time`: Used to delay retries when the API rate limit is exceeded.
+- `sys`: Used for system-specific parameters and functions.
+- `configparser`: Used to read the `config.ini` file.
+- `tqdm`: Used to display progress bars.
+
+## Configuration
+
+The script uses a configuration file `config.ini` to store the user key and other settings. Here is an example of the contents of the `config.ini` file:
+
+```ini
+[UPCITEMDB]
+user_key = 71ebc6c7f00b4eb1e0b10c59738cd98a
+skip_duplicates = true
+```
+
+## Development Environment
+
+This script was developed using Python 3.11.4 on Windows. It should work on other operating systems as well as maybe older Python, but it has not been tested on them.
 
 ## Note
 
 This script assumes that each UPC code corresponds to one product. If a UPC code corresponds to multiple products, it will only fetch details for the first product.
 
-### Planned Features
+## Planned Features
 
 - Add a GUI for inputting the UPC codes.
 - Add headers for authentication and other parameters to the API request.
 - Add search request vs lookup request to the API.
+
+Please note that the script's behavior may change as new features are added. Always refer to the latest version of this README for the most accurate information.
