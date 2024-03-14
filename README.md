@@ -58,8 +58,9 @@ This script assumes that each UPC code corresponds to one product. If a UPC code
 
 ## Planned Features
 
-- Add a GUI for inputting the UPC codes.
-- Add headers for authentication and other parameters to the API request.
+- Add a gui for inputing UPC codes to look up.
 - Add search request vs lookup request to the API.
+- Add more API enpoints for search?
+- Make this a library, perhaps
 
 Please note that the script's behavior may change as new features are added. Always refer to the latest version of this README for the most accurate information.
