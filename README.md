@@ -44,7 +44,7 @@ The script uses a configuration file `config.ini` to store the user key and othe
 
 ```ini
 [UPCITEMDB]
-user_key = 71ebc6c7f00b4eb1e0b10c59738cd98a
+user_key = 
 skip_duplicates = true
 ```
 
