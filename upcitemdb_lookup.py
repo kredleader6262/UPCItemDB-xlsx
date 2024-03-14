@@ -4,6 +4,20 @@ from openpyxl import Workbook, load_workbook
 import os
 import time
 import sys
+import configparser
+
+# Load user key from config file
+def load_user_key():
+    filename = "config.ini"
+    config = configparser.ConfigParser()
+    config.read(filename)
+    user_key = config["UPCITEMDB"]["user_key"]
+    if user_key:
+        print("User key loaded")
+        return user_key
+    else:
+        print("User key not found. Using free tier")
+        return None
 
 # Function to check and load or create workbook
 def load_or_create_workbook(filename):
@@ -29,25 +43,22 @@ def calculate_price_metrics(offers):
     
     return lowest_price, lowest_in_stock_price, average_in_stock_price, number_of_offers
 
-# Function to add item details to the master sheet, including price metrics
 def update_or_add_to_master_sheet(wb, item, lowest_price, lowest_in_stock_price, average_in_stock_price,number_of_offers):
     ws = wb["Master"]
     upc = item.get("upc")
     row_to_update = None
-    #construct a hyperlink to the UPC sheet with the cell value as the UPC
     upc_sheet_hyperlink = f'=HYPERLINK("#{upc}!A1", "{upc}")'
+    details = [item.get("ean"), item.get("title"), upc_sheet_hyperlink, item.get("gtin"), item.get("asin"), item.get("description"), item.get("brand"), item.get("model"), item.get("dimension"), item.get("weight"), item.get("category"), item.get("currency"), item.get("lowest_recorded_price"), item.get("highest_recorded_price"), lowest_price, lowest_in_stock_price, average_in_stock_price, number_of_offers]
     for idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-        if row[2] == upc:  # Assuming UPC is in the third column
+        if row[2] == upc_sheet_hyperlink:  # Check only the UPC for duplicates
             row_to_update = idx
             break
     if row_to_update:
         print(f"WARNING: Updating existing row for UPC: {upc}")
-        details = [item.get("ean"), item.get("title"), upc_sheet_hyperlink, item.get("gtin"), item.get("asin"), item.get("description"), item.get("brand"), item.get("model"), item.get("dimension"), item.get("weight"), item.get("category"), item.get("currency"), item.get("lowest_recorded_price"), item.get("highest_recorded_price"), lowest_price, lowest_in_stock_price, average_in_stock_price, number_of_offers]
         for col, detail in enumerate(details, start=1):
             ws.cell(row=row_to_update, column=col, value=detail)
     else:
         print(f"Adding new row for UPC: {upc}")
-        details = [item.get("ean"), item.get("title"), upc_sheet_hyperlink, item.get("gtin"), item.get("asin"), item.get("description"), item.get("brand"), item.get("model"), item.get("dimension"), item.get("weight"), item.get("category"), item.get("currency"), item.get("lowest_recorded_price"), item.get("highest_recorded_price"), lowest_price, lowest_in_stock_price, average_in_stock_price, number_of_offers]
         ws.append(details)
 
 # Function to create or append to UPC sheet, with updates to avoid duplicates
@@ -70,11 +81,14 @@ def add_to_upc_sheet(wb, upc, offers):
 
 # Modified process_upc function to include activity prints and handle rate limiting
 def process_upc_enhanced(filename, upc):
+    user_key = load_user_key()
     url = f"https://api.upcitemdb.com/prod/trial/lookup?upc={upc}"
+    if not user_key: headers = {}
+    else: headers = {"user_key": user_key}
     print(f"Processing UPC on URL: {url}")
     start_time = time.time()
     while True:
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)
         if response.status_code == 200:
             data = response.json()
             if data.get("code") == "OK":
@@ -152,6 +166,12 @@ if __name__ == "__main__":
 
 ## Functions to call from outside this script
 def lookup_request(upc):
+    user_key = load_user_key()
     url = f"https://api.upcitemdb.com/prod/trial/lookup?upc={upc}"
-    response = requests.get(url)
+    if not user_key:
+        print("User key not found, using free tier")
+        headers = {}
+    else:
+        headers = {"user_key": user_key}  # Add your user key here
+    response = requests.get(url, headers=headers)  # Include headers in your request
     return response.json()
